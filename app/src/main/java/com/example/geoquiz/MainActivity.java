@@ -11,7 +11,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private Button mTrueButton;
     private Button mFalseButton;
@@ -51,6 +51,7 @@ public class MainActivity extends AppCompatActivity {
 
     private boolean[] mIsCheater = new boolean[mQuestions.length];
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -74,59 +75,54 @@ public class MainActivity extends AppCompatActivity {
         mQuestionText = findViewById(R.id.question_text_view);
 
         mTrueButton = findViewById(R.id.true_button);
+        mTrueButton.setOnClickListener(this);
         mFalseButton = findViewById(R.id.false_button);
+        mFalseButton.setOnClickListener(this);
         mPreButton = findViewById(R.id.pre_button);
+        mPreButton.setOnClickListener(this);
         mNextButton = findViewById(R.id.next_button);
+        mNextButton.setOnClickListener(this);
         mCheatButton = findViewById(R.id.cheat_button);
+        mCheatButton.setOnClickListener(this);
 
-        mTrueButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-               checkQuestion(true);
-            }
-        });
-        mFalseButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+        //显示当前界面
+        updateQuestion();
+    }
+
+    @Override
+    public void onClick(View view) {
+        switch (view.getId()){
+            case R.id.true_button:
+                checkQuestion(true);
+                break;
+            case R.id.false_button:
                 checkQuestion(false);
-            }
-        });
-        mPreButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+                break;
+            case R.id.pre_button:
                 if (mCurrentIndex>0){
                     mCurrentIndex = (mCurrentIndex - 1) % mQuestions.length;
                 }else if (mCurrentIndex == 0){
                     mCurrentIndex = mQuestions.length-1;
                 }
                 updateQuestion();
-            }
-        });
-        mNextButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+                break;
+            case R.id.next_button:
                 mCurrentIndex = (mCurrentIndex + 1) % mQuestions.length;
                 updateQuestion();
                 answerLength++;
                 showScore();
-            }
-        });
-        mCheatButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+                break;
+            case R.id.cheat_button:
                 //start CheatActivity
-                
-                //传递extra
-                boolean answerIsTrue = mQuestions[mCurrentIndex].isAnswerTrue();
+                boolean answerIsTrue = mQuestions[mCurrentIndex].isAnswerTrue();//传递extra
                 Intent intent = CheatActivity.newIntent(MainActivity.this,answerIsTrue);
                 //startActivity(intent);
                 //从子Activity返回结果
                 startActivityForResult(intent,REQUEST_CODE_CHEAT);
-            }
-        });
+                break;
+            default:
 
-        //显示当前界面
-        updateQuestion();
+        }
     }
 
     @Override
@@ -143,7 +139,6 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * 保存数据以应对屏幕旋转
-     * @param outState
      */
     @Override
     protected void onSaveInstanceState(Bundle outState) {
