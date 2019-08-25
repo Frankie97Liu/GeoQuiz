@@ -1,5 +1,6 @@
 package com.example.geoquiz;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
@@ -35,12 +36,16 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String KEY_INDEX = "index";
     private static final String KEY_ANSWER = "answer";
+    //requestCode
+    private static final int REQUEST_CODE_CHEAT = 0;
 
     //正确答题数目
     private double mCorrectAnswer = 0;
 
     //回答问题总数
     private double answerLength = 0;
+
+    private boolean mIsCheater;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,6 +97,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 mCurrentIndex = (mCurrentIndex + 1) % mQuestions.length;
+                mIsCheater = false;
                 updateQuestion();
                 answerLength++;
                 showScore();
@@ -104,12 +110,26 @@ public class MainActivity extends AppCompatActivity {
                 //传递extra
                 boolean answerIsTrue = mQuestions[mCurrentIndex].isAnswerTrue();
                 Intent intent = CheatActivity.newIntent(MainActivity.this,answerIsTrue);
-                startActivity(intent);
+                //startActivity(intent);
+                //从子Activity返回结果
+                startActivityForResult(intent,REQUEST_CODE_CHEAT);
             }
         });
 
         //显示当前界面
         updateQuestion();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        switch (requestCode){
+            case REQUEST_CODE_CHEAT:
+                if (resultCode == RESULT_OK){
+                    mIsCheater = CheatActivity.wasAnswerShown(data);
+                }
+                break;
+                default:
+        }
     }
 
     /**
@@ -152,12 +172,16 @@ public class MainActivity extends AppCompatActivity {
         //显示已答过该题
         mQuestions[mCurrentIndex].setIsAnswered(1);
 
-        if (userPressedTrue == answerIsTrue){
-            messageResId = R.string.correct_toast;
-            mCorrectAnswer++;
-
+        if (mIsCheater){
+            messageResId = R.string.judgement_toast;
         }else {
-            messageResId = R.string.incorrect_toast;
+            if (userPressedTrue == answerIsTrue){
+                messageResId = R.string.correct_toast;
+                mCorrectAnswer++;
+
+            }else {
+                messageResId = R.string.incorrect_toast;
+            }
         }
 
         ButtonEnabled();

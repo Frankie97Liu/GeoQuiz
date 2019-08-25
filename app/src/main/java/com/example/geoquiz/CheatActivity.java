@@ -13,6 +13,9 @@ public class CheatActivity extends AppCompatActivity {
 
     private static final String EXTRA_ANSWER_IS_TRUE = "com.example.geoquiz.answer_is_true";
 
+    //为extra增加常量
+    private static final String EXTRA_ANSWER_SHOWN = "com.example.geoquiz.answer_shown";
+
     private boolean mAnswerIsTrue;
 
     private TextView mAnswerText;
@@ -42,8 +45,17 @@ public class CheatActivity extends AppCompatActivity {
                 }else{
                     mAnswerText.setText(R.string.false_button);
                 }
+                setAnswerShowResult(true);
             }
         });
+    }
+    public static boolean wasAnswerShown(Intent result){
+        return result.getBooleanExtra(EXTRA_ANSWER_SHOWN,false);
+    }
 
+    private void setAnswerShowResult(boolean isAnswerShown){
+        Intent data = new Intent();
+        data.putExtra(EXTRA_ANSWER_SHOWN,isAnswerShown);
+        setResult(RESULT_OK,data);
     }
 }
