@@ -30,35 +30,49 @@ public class MainActivity extends AppCompatActivity {
 
     private TextView mQuestionText;
 
+    private static final String KEY_INDEX = "index";
+    private static final String KEY_ANSWER = "answer";
+
+    //正确答题数目
+    private double mCorrectAnswer = 0;
+
+    //回答问题总数
+    private double answerLength = 0;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mQuestionText = findViewById(R.id.question_text_view);
-        //获取当前信息问题的序号
-        //int question = mQuestions[mCurrentIndex].getTextResId();
-        //mQuestionText.setText(question);
-        updateQuestion();
+        //检查存储的bundle数据
+        if (savedInstanceState!=null){
+            mCurrentIndex = savedInstanceState.getInt(KEY_INDEX,0);
 
+            int[] answerList = savedInstanceState.getIntArray(KEY_ANSWER);
+            for (int i = 0;i<mQuestions.length; i++){
+                mQuestions[i].setIsAnswered(answerList[i]);
+            }
+        }
+
+        mQuestionText = findViewById(R.id.question_text_view);
 
         mTrueButton = findViewById(R.id.true_button);
+        mFalseButton = findViewById(R.id.false_button);
+        mPreButton = findViewById(R.id.pre_button);
+        mNextButton = findViewById(R.id.next_button);
+
         mTrueButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                checkQuestion(true);
             }
         });
-
-        mFalseButton = findViewById(R.id.false_button);
         mFalseButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 checkQuestion(false);
             }
         });
-
-        mPreButton = findViewById(R.id.pre_button);
         mPreButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -70,17 +84,37 @@ public class MainActivity extends AppCompatActivity {
                 updateQuestion();
             }
         });
-
-        mNextButton = findViewById(R.id.next_button);
         mNextButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 mCurrentIndex = (mCurrentIndex + 1) % mQuestions.length;
-                //int question = mQuestions[mCurrentIndex].getTextResId();
-                //mQuestionText.setText(question);
                 updateQuestion();
+                answerLength++;
+                showScore();
             }
         });
+
+        //显示当前界面
+        updateQuestion();
+    }
+
+    /**
+     * 保存数据以应对屏幕旋转
+     * @param outState
+     */
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        //保存题目序号
+        outState.putInt(KEY_INDEX,mCurrentIndex);
+
+        //创建已经答题的列表
+        int[] answerList = new int[mQuestions.length];
+        for (int i = 0; i<mQuestions.length; i++){
+            answerList[i] = mQuestions[i].getIsAnswered();
+        }
+        //保存已经答过题的列表
+        outState.putIntArray(KEY_ANSWER,answerList);
     }
 
     /**
@@ -89,6 +123,8 @@ public class MainActivity extends AppCompatActivity {
     private void updateQuestion(){
         int question = mQuestions[mCurrentIndex].getTextResId();
         mQuestionText.setText(question);
+        //判断代码的可见性
+        ButtonEnabled();
     }
 
     /**
@@ -99,16 +135,46 @@ public class MainActivity extends AppCompatActivity {
 
         int messageResId = 0;
 
+        //显示已答过该题
+        mQuestions[mCurrentIndex].setIsAnswered(1);
+
         if (userPressedTrue == answerIsTrue){
             messageResId = R.string.correct_toast;
+            mCorrectAnswer++;
 
         }else {
             messageResId = R.string.incorrect_toast;
         }
 
+        ButtonEnabled();
+
         Toast mToast = Toast.makeText(getApplicationContext(),messageResId,Toast.LENGTH_SHORT);
         //设置Toast的重力值
         mToast.setGravity(Gravity.TOP,0,200);
         mToast.show();
+    }
+
+    /**
+     * 显示按钮的可见性
+     */
+    private void ButtonEnabled(){
+        if (mQuestions[mCurrentIndex].getIsAnswered()>0){
+            mTrueButton.setEnabled(false);
+            mFalseButton.setEnabled(false);
+        }else{
+            mTrueButton.setEnabled(true);
+            mFalseButton.setEnabled(true);
+        }
+    }
+
+    /**
+     * 显示最后得分
+     */
+    private void showScore(){
+        if (answerLength == mQuestions.length){
+            double i = mCorrectAnswer / mQuestions.length;
+            double score = i * 100;
+            Toast.makeText(this, String.valueOf(score), Toast.LENGTH_SHORT).show();
+        }
     }
 }
