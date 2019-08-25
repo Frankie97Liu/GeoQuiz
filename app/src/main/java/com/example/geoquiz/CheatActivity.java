@@ -1,10 +1,12 @@
 package com.example.geoquiz;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.PersistableBundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -16,6 +18,11 @@ public class CheatActivity extends AppCompatActivity {
     //为extra增加常量
     private static final String EXTRA_ANSWER_SHOWN = "com.example.geoquiz.answer_shown";
 
+    //增加key
+    private static final String KEY_ANSWER_IS_TRUE = "answer_is_true";
+    private static final String KEY_ANSWER_INDEX = "answer_index";
+
+    //答案是不是true
     private boolean mAnswerIsTrue;
 
     private TextView mAnswerText;
@@ -31,6 +38,15 @@ public class CheatActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_cheat);
+
+        //检查存储的Bundle数据
+        if (savedInstanceState!=null){
+            mAnswerIsTrue = savedInstanceState.getBoolean(KEY_ANSWER_IS_TRUE);
+            //判断是否看答案
+            if (mAnswerIsTrue){
+                setAnswerShowResult(mAnswerIsTrue);
+            }
+        }
 
         //获取extra
         mAnswerIsTrue = getIntent().getBooleanExtra(EXTRA_ANSWER_IS_TRUE,false);
@@ -57,5 +73,13 @@ public class CheatActivity extends AppCompatActivity {
         Intent data = new Intent();
         data.putExtra(EXTRA_ANSWER_SHOWN,isAnswerShown);
         setResult(RESULT_OK,data);
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        //保存Answer信息
+        outState.putBoolean(KEY_ANSWER_IS_TRUE,mAnswerIsTrue);
+
     }
 }

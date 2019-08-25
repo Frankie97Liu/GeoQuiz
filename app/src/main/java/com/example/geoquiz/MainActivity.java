@@ -34,8 +34,12 @@ public class MainActivity extends AppCompatActivity {
 
     private TextView mQuestionText;
 
+    //定义key值
     private static final String KEY_INDEX = "index";
     private static final String KEY_ANSWER = "answer";
+    private static final String Key_ANSWER_INDEX1 = "index1";
+    private static final String Third_BUG = "third bug";
+
     //requestCode
     private static final int REQUEST_CODE_CHEAT = 0;
 
@@ -45,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
     //回答问题总数
     private double answerLength = 0;
 
-    private boolean mIsCheater;
+    private boolean[] mIsCheater = new boolean[mQuestions.length];
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,6 +64,11 @@ public class MainActivity extends AppCompatActivity {
             for (int i = 0;i<mQuestions.length; i++){
                 mQuestions[i].setIsAnswered(answerList[i]);
             }
+
+            mIsCheater = savedInstanceState.getBooleanArray(Third_BUG);//防止旋转作弊漏洞
+        }
+        for (int i = 0;i<mQuestions.length;i++){
+            mIsCheater[i]=false;
         }
 
         mQuestionText = findViewById(R.id.question_text_view);
@@ -97,7 +106,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 mCurrentIndex = (mCurrentIndex + 1) % mQuestions.length;
-                mIsCheater = false;
                 updateQuestion();
                 answerLength++;
                 showScore();
@@ -107,6 +115,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 //start CheatActivity
+                
                 //传递extra
                 boolean answerIsTrue = mQuestions[mCurrentIndex].isAnswerTrue();
                 Intent intent = CheatActivity.newIntent(MainActivity.this,answerIsTrue);
@@ -125,7 +134,7 @@ public class MainActivity extends AppCompatActivity {
         switch (requestCode){
             case REQUEST_CODE_CHEAT:
                 if (resultCode == RESULT_OK){
-                    mIsCheater = CheatActivity.wasAnswerShown(data);
+                    mIsCheater[mCurrentIndex] = CheatActivity.wasAnswerShown(data);
                 }
                 break;
                 default:
@@ -149,6 +158,9 @@ public class MainActivity extends AppCompatActivity {
         }
         //保存已经答过题的列表
         outState.putIntArray(KEY_ANSWER,answerList);
+
+        //保存是否已经作弊的信息
+        outState.putBooleanArray(Third_BUG,mIsCheater);
     }
 
     /**
@@ -172,8 +184,11 @@ public class MainActivity extends AppCompatActivity {
         //显示已答过该题
         mQuestions[mCurrentIndex].setIsAnswered(1);
 
-        if (mIsCheater){
+        if (mIsCheater[mCurrentIndex]){
             messageResId = R.string.judgement_toast;
+            //自动跳转下一题
+            mCurrentIndex = (mCurrentIndex + 1)%mQuestions.length;
+            updateQuestion();
         }else {
             if (userPressedTrue == answerIsTrue){
                 messageResId = R.string.correct_toast;
