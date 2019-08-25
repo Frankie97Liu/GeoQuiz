@@ -101,7 +101,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 //start CheatActivity
-
                 //传递extra
                 boolean answerIsTrue = mQuestions[mCurrentIndex].isAnswerTrue();
                 Intent intent = CheatActivity.newIntent(MainActivity.this,answerIsTrue);
