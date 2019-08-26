@@ -33,6 +33,8 @@ public class CheatActivity extends AppCompatActivity {
 
     private Button mShowAnswerButton;
 
+    private TextView mVersionText;
+
     public static Intent newIntent(Context packageContext,boolean answerIsTrue){
         Intent intent = new Intent(packageContext,CheatActivity.class);
         intent.putExtra(EXTRA_ANSWER_IS_TRUE,answerIsTrue);
@@ -86,6 +88,11 @@ public class CheatActivity extends AppCompatActivity {
                 }
             }
         });
+
+        mVersionText = findViewById(R.id.version_text);
+        //获取设备编译版本并显示
+        int apiLeval = Integer.valueOf(Build.VERSION.SDK_INT);
+        mVersionText.setText("API Level: "+apiLeval);
     }
     public static boolean wasAnswerShown(Intent result){
         return result.getBooleanExtra(EXTRA_ANSWER_SHOWN,false);
