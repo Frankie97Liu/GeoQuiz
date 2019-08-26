@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
@@ -12,6 +13,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+
+    public static final String EXTRA_ANSWER_IS_TRUE = "com.example.geoquiz.answer_is_true";
+    public static final String EXTRA_CHEAT_CHANCE = "com.example.geoquiz.cheat_chance";
 
     private Button mTrueButton;
     private Button mFalseButton;
@@ -34,6 +38,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private TextView mQuestionText;
 
+    private TextView mCheatChanceText;
+
     //定义key值
     private static final String KEY_INDEX = "index";
     private static final String KEY_ANSWER = "answer";
@@ -42,6 +48,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     //requestCode
     private static final int REQUEST_CODE_CHEAT = 0;
+
+    //记录作弊次数
+    private static int mCheatChance = 3;
 
     //正确答题数目
     private double mCorrectAnswer = 0;
@@ -85,8 +94,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mCheatButton = findViewById(R.id.cheat_button);
         mCheatButton.setOnClickListener(this);
 
+        mCheatChanceText = findViewById(R.id.cheat_chance_text);
+
         //显示当前界面
         updateQuestion();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        //没有作弊机会了
+        if (mCheatChance == 0){
+            mCheatButton.setEnabled(false);
+            mCheatChanceText.setText("no chances"+" times left");
+        }else{
+            mCheatChanceText.setText(mCheatChance+" time(s) left");
+        }
     }
 
     @Override
@@ -115,7 +138,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.cheat_button:
                 //start CheatActivity
                 boolean answerIsTrue = mQuestions[mCurrentIndex].isAnswerTrue();//传递extra
-                Intent intent = CheatActivity.newIntent(MainActivity.this,answerIsTrue);
+                Intent intent = new Intent(MainActivity.this,CheatActivity.class);
+                //传入数据，答案是否是true
+                intent.putExtra(EXTRA_ANSWER_IS_TRUE,answerIsTrue);
+                //传入数据，cheat剩余次数
+                intent.putExtra(EXTRA_CHEAT_CHANCE,mCheatChance);
                 //startActivity(intent);
                 //从子Activity返回结果
                 startActivityForResult(intent,REQUEST_CODE_CHEAT);
@@ -131,6 +158,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case REQUEST_CODE_CHEAT:
                 if (resultCode == RESULT_OK){
                     mIsCheater[mCurrentIndex] = CheatActivity.wasAnswerShown(data);
+                    mCheatChance = data.getIntExtra(EXTRA_CHEAT_CHANCE,0);
+                    Log.d("Cheat", "mCheatChance "+mCheatChance);
                 }
                 break;
                 default:

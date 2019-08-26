@@ -52,7 +52,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/next_button"/>
-
     </LinearLayout>
+    <TextView
+        android:id="@+id/cheat_chance_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:padding="10dp">
+    </TextView>
 
 </LinearLayout>

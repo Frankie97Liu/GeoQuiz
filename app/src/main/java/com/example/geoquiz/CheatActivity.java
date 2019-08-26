@@ -15,12 +15,17 @@ import android.view.ViewAnimationUtils;
 import android.widget.Button;
 import android.widget.TextView;
 
+import static com.example.geoquiz.MainActivity.EXTRA_ANSWER_IS_TRUE;
+import static com.example.geoquiz.MainActivity.EXTRA_CHEAT_CHANCE;
+
 public class CheatActivity extends AppCompatActivity {
 
-    private static final String EXTRA_ANSWER_IS_TRUE = "com.example.geoquiz.answer_is_true";
+    //private static final String EXTRA_ANSWER_IS_TRUE = "com.example.geoquiz.answer_is_true";
 
     //为extra增加常量
     private static final String EXTRA_ANSWER_SHOWN = "com.example.geoquiz.answer_shown";
+
+
 
     //增加key
     private static final String KEY_ANSWER_IS_TRUE = "answer_is_true";
@@ -35,11 +40,17 @@ public class CheatActivity extends AppCompatActivity {
 
     private TextView mVersionText;
 
+    //记录作弊次数
+    private static int mCheatChance;
+
+    /*
     public static Intent newIntent(Context packageContext,boolean answerIsTrue){
         Intent intent = new Intent(packageContext,CheatActivity.class);
         intent.putExtra(EXTRA_ANSWER_IS_TRUE,answerIsTrue);
         return intent;
     }
+     */
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -54,14 +65,17 @@ public class CheatActivity extends AppCompatActivity {
             }
         }
 
-        //获取extra
+        //获取extra,
+        mCheatChance = getIntent().getIntExtra(EXTRA_CHEAT_CHANCE,3);
         mAnswerIsTrue = getIntent().getBooleanExtra(EXTRA_ANSWER_IS_TRUE,false);
+
 
         mAnswerText = findViewById(R.id.answer_text_view);
         mShowAnswerButton = findViewById(R.id.show_answer_button);
         mShowAnswerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                mCheatChance--;
                 if (mAnswerIsTrue){
                     mAnswerText.setText(R.string.true_button);
                 }else{
@@ -91,8 +105,8 @@ public class CheatActivity extends AppCompatActivity {
 
         mVersionText = findViewById(R.id.version_text);
         //获取设备编译版本并显示
-        int apiLeval = Integer.valueOf(Build.VERSION.SDK_INT);
-        mVersionText.setText("API Level: "+apiLeval);
+        CharSequence cs = "API Level"+ Build.VERSION.SDK_INT;
+        mVersionText.setText(cs);
     }
     public static boolean wasAnswerShown(Intent result){
         return result.getBooleanExtra(EXTRA_ANSWER_SHOWN,false);
@@ -101,6 +115,7 @@ public class CheatActivity extends AppCompatActivity {
     private void setAnswerShowResult(boolean isAnswerShown){
         Intent data = new Intent();
         data.putExtra(EXTRA_ANSWER_SHOWN,isAnswerShown);
+        data.putExtra(EXTRA_CHEAT_CHANCE,mCheatChance);
         setResult(RESULT_OK,data);
     }
 
